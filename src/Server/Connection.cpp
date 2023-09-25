@@ -110,14 +110,17 @@ void Connection::setId(uint32_t id)
 void Connection::send(const void *packet, size_t size)
 {
 	size_t sent;
-
-	auto status = this->_socket->send(packet, size, sent);
 #ifndef _LOBBYNOLOG
 	logMutex.lock();
 	std::cout << "[>" << this->_socket->getRemoteAddress().toString() << ":" << this->_socket->getRemotePort();
 	if (this->_id)
 		std::cout << " player id " << this->_id;
 	std::cout << "] " << size << " bytes: " << reinterpret_cast<const Lobbies::Packet *>(packet)->toString() << std::endl;
+	logMutex.unlock();
+#endif
+	auto status = this->_socket->send(packet, size, sent);
+#ifndef _LOBBYNOLOG
+	logMutex.lock();
 	// The above cases, which require the TCP send buffer to be full, are probably hard to happen under default configuration.
 	// But we still log it when it does happen.
 	if (status == sf::Socket::Partial) {
