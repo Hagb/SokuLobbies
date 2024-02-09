@@ -5,11 +5,23 @@
 #ifndef SOKULOBBIES_CONNECTION_HPP
 #define SOKULOBBIES_CONNECTION_HPP
 
-
 #include <Packet.hpp>
 #include <SFML/Network.hpp>
+#include <netinet/tcp.h>
+#include <netinet/in.h>
+#include <SFML/Network/SocketHandle.hpp>
+#include <SFML/Network/TcpSocket.hpp>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <iostream>
+
 #include <thread>
 #include <functional>
+
+class DisableNodelayTcpSocket : public sf::TcpSocket {
+public:
+	sf::SocketHandle getHandle_();
+};
 
 class Connection {
 public:
@@ -33,7 +45,7 @@ private:
 	unsigned long long _uniqueId;
 	std::string _name;
 	std::string _realName;
-	std::unique_ptr<sf::TcpSocket> _socket;
+	std::unique_ptr<DisableNodelayTcpSocket> _socket;
 	Lobbies::LobbySettings _settings;
 	Lobbies::PlayerCustomization _player;
 	std::thread _netThread;
@@ -76,7 +88,7 @@ public:
 	std::function<bool (uint32_t aid)> onGameRequest;
 	std::function<void ()> onArcadeLeave;
 
-	Connection(std::unique_ptr<sf::TcpSocket> &socket, const char *password);
+	Connection(std::unique_ptr<DisableNodelayTcpSocket> &socket, const char *password);
 	~Connection();
 	sf::IpAddress getIp() const;
 	void kick(const std::string &msg);

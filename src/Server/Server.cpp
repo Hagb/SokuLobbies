@@ -148,7 +148,7 @@ void Server::run(unsigned short port, unsigned maxPlayers, const std::string &na
 #ifndef _DEBUG
 	try {
 #endif
-		auto socket = std::make_unique<sf::TcpSocket>();
+		auto socket = std::make_unique<DisableNodelayTcpSocket>();
 		auto future = readLine();
 
 		this->_password = password;
@@ -178,7 +178,7 @@ void Server::run(unsigned short port, unsigned maxPlayers, const std::string &na
 				this->_connections.emplace_back(new Connection(socket, this->_password));
 				this->_prepareConnectionHandlers(*this->_connections.back());
 				this->_connectionsMutex.unlock();
-				socket = std::make_unique<sf::TcpSocket>();
+				socket = std::make_unique<DisableNodelayTcpSocket>();
 			} else
 				std::this_thread::sleep_for(std::chrono::milliseconds(100));
 

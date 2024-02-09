@@ -2,6 +2,7 @@
 // Created by PinkySmile on 01/10/2022.
 //
 
+#include <SFML/Network/SocketHandle.hpp>
 #ifndef _LOBBYNOLOG
 #include <iostream>
 #include <mutex>
@@ -9,6 +10,11 @@ extern std::mutex logMutex;
 #endif
 #include <cstring>
 #include "Connection.hpp"
+
+sf::SocketHandle DisableNodelayTcpSocket::getHandle_()
+{
+	return this->getHandle();
+}
 
 
 void Connection::_netLoop()
@@ -74,10 +80,15 @@ void Connection::_netLoop()
 	} while (true);
 }
 
-Connection::Connection(std::unique_ptr<sf::TcpSocket> &socket, const char *password) :
+Connection::Connection(std::unique_ptr<DisableNodelayTcpSocket> &socket, const char *password) :
 	_password(password),
 	_socket(std::move(socket))
 {
+	int set = 0;
+	if(setsockopt(this->_socket->getHandle_(), IPPROTO_TCP, TCP_NODELAY, &set, sizeof(set))==-1)
+			std::cout << "cannot disable nodelay" << std::endl;
+	else
+			std::cout << "disable nodelay" << std::endl;
 }
 
 Connection::~Connection()
